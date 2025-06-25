@@ -1,20 +1,20 @@
 package br.com.agenciaviagens.factory;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.Statement;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseInitializer {
 
-    // Método público que orquestra toda a inicialização.
+    /**
+     * Método público que orquestra toda a inicialização do banco de dados.
+     */
     public static void initialize() {
         System.out.println("Iniciando processo de inicialização do banco de dados...");
 
         try {
-            // Passo 1: Garantir que o schema exista.
+            // Passo 1: Garantir que o schema (banco de dados) exista.
             try (Connection conn = ConnectionFactory.createRootConnection();
                  Statement stmt = conn.createStatement()) {
                 stmt.execute("DROP SCHEMA IF EXISTS `agencia_viagens`");
@@ -22,30 +22,36 @@ public class DatabaseInitializer {
                 System.out.println("Schema 'agencia_viagens' criado com sucesso.");
             }
 
-            // Passo 2: Conectar ao banco recém-criado e CRIAR AS TABELAS explicitamente.
+            // Passo 2 e 3: Conectar ao banco recém-criado para criar tabelas e popular dados.
+            // Usamos um único bloco try-with-resources para a conexão, que será usada para ambos os passos.
             try (Connection conn = ConnectionFactory.createConnectionToMySQL();
                  Statement stmt = conn.createStatement()) {
 
-                System.out.println("Conexão com 'agencia_viagens' estabelecida. Criando tabelas...");
-                createTables(stmt); // Chamando o método auxiliar para criar tabelas
-                System.out.println("Todas as tabelas foram criadas com sucesso.");
-            }
+                System.out.println("Conexão com 'agencia_viagens' estabelecida.");
 
-            // Passo 3: Popular o banco de dados usando o script de povoamento.
-            try (Connection conn = ConnectionFactory.createConnectionToMySQL()) {
+                // Passo 2: Criar as tabelas.
+                System.out.println("Criando tabelas...");
+                createTables(stmt);
+                System.out.println("Todas as tabelas foram criadas com sucesso.");
+
+                // Passo 3: Popular o banco de dados.
                 System.out.println("Populando o banco de dados...");
-                runPovoamentoScript(conn);
+                populateDatabase(stmt);
                 System.out.println("Banco de dados populado com sucesso.");
             }
 
         } catch (Exception e) {
             System.err.println("### OCORREU UM ERRO GERAL DURANTE A INICIALIZAÇÃO ###");
             e.printStackTrace();
+            // Lança uma exceção para parar a aplicação se o banco não puder ser inicializado.
             throw new RuntimeException("Falha ao inicializar o banco de dados.", e);
         }
     }
 
-    // Método privado para conter os comandos de criação de tabela.
+    /**
+     * Contém os comandos SQL para criar todas as tabelas da aplicação.
+     * @param stmt O Statement conectado ao banco 'agencia_viagens'.
+     */
     private static void createTables(Statement stmt) throws Exception {
         String sqlCreateTableClientes = "CREATE TABLE `clientes` (`id_cliente` INT NOT NULL AUTO_INCREMENT, `nome` VARCHAR(255) NOT NULL, `email` VARCHAR(255) NOT NULL UNIQUE, `telefone` VARCHAR(20), `endereco` VARCHAR(255), `tipo_cliente` ENUM('NACIONAL', 'ESTRANGEIRO') NOT NULL, `cpf` VARCHAR(14) UNIQUE, `passaporte` VARCHAR(20) UNIQUE, PRIMARY KEY (`id_cliente`))";
         String sqlCreateTablePacotes = "CREATE TABLE `pacotes` (`id_pacote` INT NOT NULL AUTO_INCREMENT, `nome_pacote` VARCHAR(255) NOT NULL, `destino` VARCHAR(255) NOT NULL, `data_partida` DATE, `data_retorno` DATE, `preco` DECIMAL(10, 2) NOT NULL, PRIMARY KEY (`id_pacote`))";
@@ -60,25 +66,38 @@ public class DatabaseInitializer {
         stmt.execute(sqlCreateTableContratacaoServicos);
     }
 
-    // Método auxiliar para rodar apenas o script de povoamento.
-    private static void runPovoamentoScript(Connection conn) throws Exception {
-        InputStream inputStream = DatabaseInitializer.class.getClassLoader().getResourceAsStream("povoamento.sql");
-        if (inputStream == null) {
-            throw new Exception("Não foi possível encontrar o script: povoamento.sql");
-        }
+    /**
+     * Contém os comandos SQL para limpar e popular o banco com dados de teste.
+     * @param stmt O Statement conectado ao banco 'agencia_viagens'.
+     */
+    private static void populateDatabase(Statement stmt) throws Exception {
+        List<String> commands = new ArrayList<>();
 
-        String scriptContent = new BufferedReader(new InputStreamReader(inputStream))
-                .lines().collect(Collectors.joining("\n"));
+        commands.add("DELETE FROM `contratacao_servicos`");
+        commands.add("DELETE FROM `contratacoes`");
+        commands.add("DELETE FROM `servicos_adicionais`");
+        commands.add("DELETE FROM `pacotes`");
+        commands.add("DELETE FROM `clientes`");
 
-        String[] sqlCommands = scriptContent.split(";\\s*");
+        commands.add("INSERT INTO `clientes` (nome, email, telefone, endereco, tipo_cliente, cpf, passaporte) VALUES ('João Silva', 'joao.silva@email.com', '(11) 98765-4321', 'Rua das Flores, 123', 'NACIONAL', '111.222.333-44', NULL)");
+        commands.add("INSERT INTO `clientes` (nome, email, telefone, endereco, tipo_cliente, cpf, passaporte) VALUES ('Maria Oliveira', 'maria.oliveira@email.com', '(21) 91234-5678', 'Avenida Principal, 456', 'NACIONAL', '555.666.777-88', NULL)");
+        commands.add("INSERT INTO `clientes` (nome, email, telefone, endereco, tipo_cliente, cpf, passaporte) VALUES ('John Doe', 'john.doe@email.com', '+11234567890', '123 Flower Street', 'ESTRANGEIRO', NULL, 'A1B2C3D4')");
 
-        try (Statement stmt = conn.createStatement()) {
-            for (String command : sqlCommands) {
-                if (command.trim().isEmpty() || command.trim().startsWith("--")) {
-                    continue;
-                }
-                stmt.execute(command);
-            }
+        commands.add("INSERT INTO `pacotes` (nome_pacote, destino, data_partida, data_retorno, preco) VALUES ('Praias do Nordeste', 'Salvador, BA', '2025-10-20', '2025-10-30', 2500.00)");
+        commands.add("INSERT INTO `pacotes` (nome_pacote, destino, data_partida, data_retorno, preco) VALUES ('Serra Gaúcha', 'Gramado, RS', '2025-07-15', '2025-07-22', 1800.50)");
+        commands.add("INSERT INTO `pacotes` (nome_pacote, destino, data_partida, data_retorno, preco) VALUES ('Tour Europeu', 'Paris, Roma, Lisboa', '2025-09-01', '2025-09-15', 7500.75)");
+
+        commands.add("INSERT INTO `servicos_adicionais` (nome_servico, descricao, preco) VALUES ('Seguro Viagem Completo', 'Cobertura total para despesas médicas e bagagem.', 150.00)");
+        commands.add("INSERT INTO `servicos_adicionais` (nome_servico, descricao, preco) VALUES ('Aluguel de Carro', 'Carro econômico com ar condicionado.', 450.00)");
+        commands.add("INSERT INTO `servicos_adicionais` (nome_servico, descricao, preco) VALUES ('Passeio de Barco', 'Passeio turístico pelas principais ilhas.', 200.00)");
+
+        commands.add("INSERT INTO `contratacoes` (id_cliente, id_pacote, data_contratacao) VALUES ((SELECT id_cliente FROM clientes WHERE email = 'joao.silva@email.com'), (SELECT id_pacote FROM pacotes WHERE nome_pacote = 'Praias do Nordeste'), NOW())");
+        commands.add("INSERT INTO `contratacoes` (id_cliente, id_pacote, data_contratacao) VALUES ((SELECT id_cliente FROM clientes WHERE email = 'john.doe@email.com'), (SELECT id_pacote FROM pacotes WHERE nome_pacote = 'Tour Europeu'), NOW())");
+
+        commands.add("INSERT INTO `contratacao_servicos` (id_contratacao, id_servico) VALUES ((SELECT id_contratacao FROM contratacoes WHERE id_cliente = (SELECT id_cliente FROM clientes WHERE email = 'joao.silva@email.com')), (SELECT id_servico FROM servicos_adicionais WHERE nome_servico = 'Seguro Viagem Completo'))");
+
+        for (String command : commands) {
+            stmt.execute(command);
         }
     }
 }
