@@ -13,7 +13,7 @@ public class ConnectionFactory {
     private static final String APP_DATABASE_URL = "jdbc:mysql://localhost:3306/agencia_viagens?useTimezone=true&serverTimezone=UTC&allowMultiQueries=true";
 
     private static final String USERNAME = "root";
-    private static final String PASSWORD = "root";
+    private static final String PASSWORD = "root"; // todo: !!!!!!!! SUA SENHA ROOT !!!!!!!!!!
     /**
      * Cria uma conexão com o servidor MySQL (sem banco de dados específico).
      * Usado apenas para criar o schema inicial.
