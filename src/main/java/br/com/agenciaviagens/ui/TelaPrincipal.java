@@ -46,12 +46,14 @@ public class TelaPrincipal extends JFrame {
         painelPrincipal.add(painelBoasVindas, "BOAS_VINDAS");
         painelPrincipal.add(new PainelPacotes(), "PACOTES");
         painelPrincipal.add(new PainelClientes(), "CLIENTES");
+        painelPrincipal.add(new PainelServicos(), "SERVICOS");
 
         add(painelPrincipal, BorderLayout.CENTER);
 
         // --- Ações do Menu ---
         itemPacotes.addActionListener(e -> cardLayout.show(painelPrincipal, "PACOTES"));
         itemClientes.addActionListener(e -> cardLayout.show(painelPrincipal, "CLIENTES"));
+        itemServicos.addActionListener(e -> cardLayout.show(painelPrincipal, "SERVICOS"));
 
         // Mostra o painel inicial
         cardLayout.show(painelPrincipal, "BOAS_VINDAS");
