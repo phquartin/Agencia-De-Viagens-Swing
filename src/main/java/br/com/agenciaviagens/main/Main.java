@@ -13,7 +13,7 @@ public class Main {
 
         DatabaseInitializer.initialize();
 
-        // 2. Configura o Look and Feel moderno ANTES de criar qualquer componente Swing.
+        // Configura o Look and Feel moderno ANTES de criar qualquer componente Swing.
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());
         } catch (Exception ex) {

@@ -4,6 +4,7 @@ import br.com.agenciaviagens.dao.ContratacaoDAO;
 import br.com.agenciaviagens.exception.ValidationException;
 import br.com.agenciaviagens.model.Contratacao;
 import java.sql.SQLException;
+import java.util.List;
 
 public class ContratacaoService {
     private final ContratacaoDAO contratacaoDAO;
@@ -23,6 +24,13 @@ public class ContratacaoService {
             contratacaoDAO.save(contratacao);
         } catch (SQLException e) {
             throw new ValidationException("Erro técnico ao salvar a contratação: " + e.getMessage());
+        }
+    }
+    public List<Contratacao> buscarContratacoesPorCliente(int clienteId) throws ValidationException {
+        try {
+            return contratacaoDAO.findByClienteId(clienteId);
+        } catch (SQLException e) {
+            throw new ValidationException("Erro técnico ao consultar as contratações: " + e.getMessage());
         }
     }
 }

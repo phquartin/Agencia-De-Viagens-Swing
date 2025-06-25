@@ -2,8 +2,11 @@ package br.com.agenciaviagens.dao;
 
 import br.com.agenciaviagens.factory.ConnectionFactory;
 import br.com.agenciaviagens.model.Contratacao;
+import br.com.agenciaviagens.model.Pacote;
 import br.com.agenciaviagens.model.ServicoAdicional;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ContratacaoDAO {
     public void save(Contratacao contratacao) throws SQLException {
@@ -62,5 +65,38 @@ public class ContratacaoDAO {
                 conn.close();
             }
         }
+    }
+    public List<Contratacao> findByClienteId(int clienteId) throws SQLException {
+        // SQL com JOIN para buscar dados da contratação e do pacote vinculado
+        String sql = "SELECT c.id_contratacao, c.data_contratacao, p.id_pacote, p.nome_pacote, p.destino, p.preco " +
+                "FROM contratacoes c " +
+                "JOIN pacotes p ON c.id_pacote = p.id_pacote " +
+                "WHERE c.id_cliente = ?";
+
+        List<Contratacao> contratacoes = new ArrayList<>();
+
+        try (Connection conn = ConnectionFactory.createConnectionToMySQL();
+             PreparedStatement pstm = conn.prepareStatement(sql)) {
+
+            pstm.setInt(1, clienteId);
+            try (ResultSet rset = pstm.executeQuery()) {
+                while (rset.next()) {
+                    Contratacao contratacao = new Contratacao();
+                    contratacao.setId(rset.getInt("id_contratacao"));
+                    contratacao.setDataContratacao(rset.getTimestamp("data_contratacao"));
+
+                    Pacote pacote = new Pacote();
+                    pacote.setId(rset.getInt("id_pacote"));
+                    pacote.setNomePacote(rset.getString("nome_pacote"));
+                    pacote.setDestino(rset.getString("destino"));
+                    pacote.setPreco(rset.getDouble("preco"));
+
+                    contratacao.setPacote(pacote);
+
+                    contratacoes.add(contratacao);
+                }
+            }
+        }
+        return contratacoes;
     }
 }
