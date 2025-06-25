@@ -1,5 +1,6 @@
 package br.com.agenciaviagens.dao;
 
+import br.com.agenciaviagens.exception.ValidationException;
 import br.com.agenciaviagens.factory.ConnectionFactory;
 import br.com.agenciaviagens.model.Pacote;
 
@@ -11,7 +12,7 @@ public class PacoteDAO {
 
 
     // Método para salvar um pacote no banco de dados
-    public void save(Pacote pacote) {
+    public void save(Pacote pacote) throws SQLException {
         String sql = "INSERT INTO pacotes (nome_pacote, destino, preco, data_partida, data_retorno) VALUES (?, ?, ?, ?, ?)";
 
         Connection conn = null;
@@ -36,9 +37,6 @@ public class PacoteDAO {
 
             System.out.println("Pacote salvo com sucesso!");
 
-        } catch (SQLException e) {
-
-            System.err.println("Falha ao gravar a Pacote: " + e.getMessage());
         } finally {
             // 5. Fechar as conexões
             try {
@@ -151,7 +149,7 @@ public class PacoteDAO {
     }
 
     // Método para deletar um pacote pelo seu ID
-    public void deleteById(int id) {
+    public void deleteById(int id) throws SQLException {
         String sql = "DELETE FROM pacotes WHERE id_pacote = ?";
 
         Connection conn = null;
@@ -165,8 +163,6 @@ public class PacoteDAO {
             pstm.execute();
             System.out.println("Pacote deletado com sucesso!");
 
-        } catch (SQLException e) {
-            System.err.println("Erro ao deletar pacote. Pode haver contratações associadas." + e.getMessage());
         } finally {
             try {
                 if (pstm != null) pstm.close();

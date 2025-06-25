@@ -14,7 +14,7 @@ import java.util.List;
 public class ServicoAdicionalDAO {
 
     // Método para salvar um serviço adicional
-    public void save(ServicoAdicional servico) {
+    public void save(ServicoAdicional servico) throws SQLException {
         String sql = "INSERT INTO servicos_adicionais (nome_servico, descricao, preco) VALUES (?, ?, ?)";
 
         Connection conn = null;
@@ -30,9 +30,6 @@ public class ServicoAdicionalDAO {
 
             pstm.execute();
             System.out.println("Serviço adicional salvo com sucesso!");
-
-        } catch (SQLException e) {
-            System.err.println("Falha ao salvar um serviço:" + e.getMessage());
         } finally {
             // Fecha as conexões
             try {
@@ -125,7 +122,7 @@ public class ServicoAdicionalDAO {
     }
 
     // Método para deletar um servico pelo seu ID
-    public void deleteById(int id) {
+    public void deleteById(int id) throws SQLException {
         String sql = "DELETE FROM servicos_adicionais WHERE id_servico = ?";
 
         Connection conn = null;
@@ -139,8 +136,6 @@ public class ServicoAdicionalDAO {
             pstm.execute();
             System.out.println("Servico deletado com sucesso!");
 
-        } catch (SQLException e) {
-            System.err.println("Erro ao deletar servico. Pode haver contratações associadas." + e.getMessage());
         } finally {
             try {
                 if (pstm != null) pstm.close();

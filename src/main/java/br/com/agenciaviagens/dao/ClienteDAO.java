@@ -10,7 +10,7 @@ import java.util.List;
 
 public class ClienteDAO {
 
-    public void save(Cliente cliente) {
+    public void save(Cliente cliente) throws SQLException{
         String sql = "INSERT INTO clientes (nome, email, telefone, endereco, tipo_cliente, cpf, passaporte) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         Connection conn = null;
@@ -142,7 +142,7 @@ public class ClienteDAO {
     }
 
     // Método para deletar um cliente pelo seu ID
-    public void deleteById(int id) {
+    public void deleteById(int id) throws SQLException {
         String sql = "DELETE FROM clientes WHERE id_cliente = ?";
 
         Connection conn = null;
@@ -156,8 +156,6 @@ public class ClienteDAO {
             pstm.execute();
             System.out.println("Cliente deletado com sucesso!");
 
-        } catch (SQLException e) {
-            System.err.println("Erro ao deletar cliente. Pode haver contratações associadas." + e.getMessage());
         } finally {
             try {
                 if (pstm != null) pstm.close();
