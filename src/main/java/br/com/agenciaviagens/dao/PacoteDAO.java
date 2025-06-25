@@ -105,4 +105,76 @@ public class PacoteDAO {
 
         return pacotes;
     }
+
+    // Método para buscar um pacote pelo seu ID
+    public Pacote findById(int id) {
+        String sql = "SELECT * FROM pacotes WHERE id_pacote = ?";
+        Pacote pacote = null; // Pode ser null
+
+        Connection conn = null;
+        PreparedStatement pstm = null;
+        ResultSet rset = null;
+
+        try {
+            conn = ConnectionFactory.createConnectionToMySQL();
+            pstm = conn.prepareStatement(sql);
+
+            // Seta o ID que estamos buscando
+            pstm.setInt(1, id);
+
+            rset = pstm.executeQuery();
+
+            // Se o ResultSet tiver um resultado, significa que um objeto foi encontrado
+            if (rset.next()) {
+                pacote = new Pacote();
+                pacote.setId(rset.getInt("id_pacote"));
+                pacote.setNomePacote(rset.getString("nome_pacote"));
+                pacote.setDestino(rset.getString("destino"));
+                pacote.setPreco(rset.getDouble("preco"));
+                pacote.setDataPartida(rset.getDate("data_partida"));
+                pacote.setDataRetorno(rset.getDate("data_retorno"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Falha ao obter a Pacote: " + e.getMessage());
+        } finally {
+            try {
+                if (rset != null) rset.close();
+                if (pstm != null) pstm.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                System.err.println("Falha ao fechar as conexões: " + e.getMessage());
+            }
+        }
+
+        // Retorna o objeto encontrado ou null se não existir
+        return pacote;
+    }
+
+    // Método para deletar um pacote pelo seu ID
+    public void deleteById(int id) {
+        String sql = "DELETE FROM pacotes WHERE id_pacote = ?";
+
+        Connection conn = null;
+        PreparedStatement pstm = null;
+
+        try {
+            conn = ConnectionFactory.createConnectionToMySQL();
+            pstm = conn.prepareStatement(sql);
+            pstm.setInt(1, id);
+
+            pstm.execute();
+            System.out.println("Pacote deletado com sucesso!");
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao deletar pacote. Pode haver contratações associadas." + e.getMessage());
+        } finally {
+            try {
+                if (pstm != null) pstm.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                System.err.println("Falha ao fechar as conexões: " + e.getMessage());
+            }
+        }
+    }
+
 }
