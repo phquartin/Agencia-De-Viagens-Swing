@@ -1,20 +1,31 @@
 package br.com.agenciaviagens.main;
 
 import br.com.agenciaviagens.factory.DatabaseInitializer;
+import br.com.agenciaviagens.ui.TelaPrincipal;
+import com.formdev.flatlaf.FlatLightLaf;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 public class Main {
 
     public static void main(String[] args) {
         System.out.println("Iniciando aplicação...");
 
-        // Passo 1: Inicializar o banco de dados.
+        // 1. Inicializa o banco de dados (como antes)
         DatabaseInitializer.initialize();
 
-        System.out.println("=====================================================");
-        System.out.println("Backend pronto. Aguardando a implementação da interface gráfica.");
-        System.out.println("=====================================================");
+        // 2. Configura o Look and Feel moderno ANTES de criar qualquer componente Swing.
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf());
+        } catch (Exception ex) {
+            System.err.println("Falha ao carregar o Look and Feel.");
+        }
 
-        // Passo 2: Futuramente, aqui chamaremos a tela principal
-        // Ex: SwingUtilities.invokeLater(() -> new TelaPrincipal().setVisible(true));
+        // 3. Inicia a interface gráfica na Thread de Eventos do Swing (EDT)
+        // Isso é crucial para garantir que a UI seja segura para threads.
+        SwingUtilities.invokeLater(() -> {
+            TelaPrincipal tela = new TelaPrincipal();
+            tela.setVisible(true);
+        });
     }
 }
