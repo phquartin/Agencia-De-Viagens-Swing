@@ -3,7 +3,9 @@ package br.com.agenciaviagens.ui;
 import br.com.agenciaviagens.exception.ValidationException;
 import br.com.agenciaviagens.model.Cliente;
 import br.com.agenciaviagens.service.ClienteService;
+import br.com.agenciaviagens.ui.util.AlphanumericFilter;
 import br.com.agenciaviagens.ui.util.Estilo;
+import br.com.agenciaviagens.ui.util.LettersOnlyFilter;
 
 import javax.swing.*;
 import javax.swing.text.MaskFormatter;
@@ -18,7 +20,7 @@ public class DialogoCliente extends JDialog {
 
     // Campos de Texto
     private JTextField txtNome, txtEmail, txtEndereco, txtPassaporte;
-    private JFormattedTextField txtCpf, txtTelefone; // <-- TROCAMOS PARA JFormattedTextField
+    private JFormattedTextField txtCpf, txtTelefone;
     private JComboBox<Cliente.TipoCliente> comboTipoCliente;
 
     public DialogoCliente(Frame owner, ClienteService clienteService, Cliente cliente, Runnable callbackSucesso) {
@@ -56,13 +58,15 @@ public class DialogoCliente extends JDialog {
 
         // Campos de entrada
         txtNome = new JTextField(25);
+        ((javax.swing.text.AbstractDocument) txtNome.getDocument()).setDocumentFilter(new LettersOnlyFilter());
+
         txtEmail = new JTextField(25);
         txtEndereco = new JTextField(25);
         comboTipoCliente = new JComboBox<>(Cliente.TipoCliente.values());
-        txtPassaporte = new JTextField(25);
 
-        // --- INÍCIO DA MUDANÇA ---
-        // Criação dos campos formatados
+        txtPassaporte = new JTextField(25);
+        ((javax.swing.text.AbstractDocument) txtPassaporte.getDocument()).setDocumentFilter(new AlphanumericFilter(9));
+
         try {
             MaskFormatter mascaraCpf = new MaskFormatter("###.###.###-##");
             mascaraCpf.setPlaceholderCharacter('_');
@@ -73,22 +77,21 @@ public class DialogoCliente extends JDialog {
             txtTelefone = new JFormattedTextField(mascaraTelefone);
 
         } catch (ParseException e) {
-            // Em caso de erro na máscara, usa campos normais como fallback
             e.printStackTrace();
             txtCpf = new JFormattedTextField();
             txtTelefone = new JFormattedTextField();
         }
-        // --- FIM DA MUDANÇA ---
 
+        // Adiciona componentes ao painel
         gbc.gridx = 1; gbc.gridy = 0; gbc.weightx = 1.0; painelCampos.add(txtNome, gbc);
         gbc.gridy++; painelCampos.add(txtEmail, gbc);
-        gbc.gridy++; painelCampos.add(txtTelefone, gbc); // <-- Agora é o campo formatado
+        gbc.gridy++; painelCampos.add(txtTelefone, gbc);
         gbc.gridy++; painelCampos.add(txtEndereco, gbc);
         gbc.gridy++; painelCampos.add(comboTipoCliente, gbc);
-        gbc.gridy++; painelCampos.add(txtCpf, gbc); // <-- Agora é o campo formatado
+        gbc.gridy++; painelCampos.add(txtCpf, gbc);
         gbc.gridy++; painelCampos.add(txtPassaporte, gbc);
 
-        // (O restante do layout de botões permanece o mesmo)
+        // Painel de botões
         JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnSalvar = new JButton("Salvar");
         JButton btnCancelar = new JButton("Cancelar");
@@ -112,16 +115,33 @@ public class DialogoCliente extends JDialog {
         if (clienteAtual != null) {
             txtNome.setText(clienteAtual.getNome());
             txtEmail.setText(clienteAtual.getEmail());
-            txtTelefone.setText(clienteAtual.getTelefone()); // O JFormattedTextField vai tentar encaixar o valor na máscara
+            txtTelefone.setValue(clienteAtual.getTelefone());
             txtEndereco.setText(clienteAtual.getEndereco());
             comboTipoCliente.setSelectedItem(clienteAtual.getTipo());
-            txtCpf.setText(clienteAtual.getCpf()); // O JFormattedTextField vai tentar encaixar o valor na máscara
+            txtCpf.setValue(clienteAtual.getCpf());
             txtPassaporte.setText(clienteAtual.getPassaporte());
         }
         atualizarCamposDocumento();
     }
 
-    // Método para salvar os dados (agora pega os dados dos campos formatados)
+    private void atualizarCamposDocumento() {
+        Cliente.TipoCliente tipoSelecionado = (Cliente.TipoCliente) comboTipoCliente.getSelectedItem();
+        boolean isNacional = (tipoSelecionado == Cliente.TipoCliente.NACIONAL);
+
+        txtCpf.setEnabled(isNacional);
+        txtPassaporte.setEnabled(!isNacional);
+
+        if (isNacional) {
+            if (clienteAtual == null || clienteAtual.getTipo() != Cliente.TipoCliente.NACIONAL) {
+                txtPassaporte.setText("");
+            }
+        } else {
+            if (clienteAtual == null || clienteAtual.getTipo() != Cliente.TipoCliente.ESTRANGEIRO) {
+                txtCpf.setValue(null);
+            }
+        }
+    }
+
     private void salvar() {
         if (clienteAtual == null) {
             clienteAtual = new Cliente();
@@ -130,10 +150,10 @@ public class DialogoCliente extends JDialog {
         try {
             clienteAtual.setNome(txtNome.getText());
             clienteAtual.setEmail(txtEmail.getText());
-            clienteAtual.setTelefone(txtTelefone.getText()); // Pega o texto formatado
+            clienteAtual.setTelefone(txtTelefone.getText());
             clienteAtual.setEndereco(txtEndereco.getText());
             clienteAtual.setTipo((Cliente.TipoCliente) comboTipoCliente.getSelectedItem());
-            clienteAtual.setCpf(txtCpf.getText()); // Pega o texto formatado
+            clienteAtual.setCpf(txtCpf.getText());
             clienteAtual.setPassaporte(txtPassaporte.getText());
 
             clienteService.salvar(clienteAtual);
@@ -144,24 +164,6 @@ public class DialogoCliente extends JDialog {
 
         } catch (ValidationException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro de Validação", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    // O método atualizarCamposDocumento permanece o mesmo
-    private void atualizarCamposDocumento() {
-        Cliente.TipoCliente tipoSelecionado = (Cliente.TipoCliente) comboTipoCliente.getSelectedItem();
-        if (tipoSelecionado == Cliente.TipoCliente.NACIONAL) {
-            txtCpf.setEnabled(true);
-            txtPassaporte.setEnabled(false);
-            if (clienteAtual == null || clienteAtual.getTipo() != Cliente.TipoCliente.NACIONAL) {
-                txtPassaporte.setText("");
-            }
-        } else {
-            txtCpf.setEnabled(false);
-            if (clienteAtual == null || clienteAtual.getTipo() != Cliente.TipoCliente.ESTRANGEIRO) {
-                txtCpf.setText("");
-            }
-            txtPassaporte.setEnabled(true);
         }
     }
 }

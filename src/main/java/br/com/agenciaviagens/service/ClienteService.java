@@ -35,10 +35,17 @@ public class ClienteService {
         }
     }
 
+    // Em ClienteService.java
+
     private void validarCliente(Cliente cliente) throws ValidationException {
         if (cliente.getNome() == null || cliente.getNome().trim().isEmpty()) {
             throw new ValidationException("O nome do cliente é obrigatório.");
         }
+
+        if (!cliente.getNome().matches("[a-zA-Z\\s]+")) {
+            throw new ValidationException("O nome deve conter apenas letras e espaços.");
+        }
+
         if (cliente.getEmail() == null || cliente.getEmail().trim().isEmpty()) {
             throw new ValidationException("O e-mail do cliente é obrigatório.");
         }
@@ -49,18 +56,19 @@ public class ClienteService {
             throw new ValidationException("O tipo de cliente (Nacional/Estrangeiro) é obrigatório.");
         }
 
-        // Validações condicionais baseadas no tipo de cliente
         if (cliente.getTipo() == Cliente.TipoCliente.NACIONAL) {
-            if (cliente.getCpf() == null || cliente.getCpf().trim().isEmpty()) {
-                throw new ValidationException("O CPF é obrigatório para clientes nacionais.");
+            if (cliente.getCpf() == null || cliente.getCpf().trim().isEmpty() || cliente.getCpf().contains("_")) {
+                throw new ValidationException("O CPF é obrigatório e deve ser preenchido completamente para clientes nacionais.");
             }
-            // Limpa o campo passaporte para garantir consistência
             cliente.setPassaporte(null);
         } else { // Se for ESTRANGEIRO
             if (cliente.getPassaporte() == null || cliente.getPassaporte().trim().isEmpty()) {
                 throw new ValidationException("O Passaporte é obrigatório para clientes estrangeiros.");
             }
-            // Limpa o campo CPF para garantir consistência
+            // NOVA VALIDAÇÃO: Passaporte com regex
+            if (!cliente.getPassaporte().matches("^[A-Z0-9]{6,9}$")) {
+                throw new ValidationException("O passaporte deve conter de 6 a 9 caracteres, apenas letras maiúsculas e números.");
+            }
             cliente.setCpf(null);
         }
     }
