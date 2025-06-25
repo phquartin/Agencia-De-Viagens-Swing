@@ -79,9 +79,9 @@ public class DatabaseInitializer {
         commands.add("DELETE FROM `pacotes`");
         commands.add("DELETE FROM `clientes`");
 
-        commands.add("INSERT INTO `clientes` (nome, email, telefone, endereco, tipo_cliente, cpf, passaporte) VALUES ('João Silva', 'joao.silva@email.com', '(11) 98765-4321', 'Rua das Flores, 123', 'NACIONAL', '111.222.333-44', NULL)");
+        commands.add("INSERT INTO `clientes` (nome, email, telefone, endereco, tipo_cliente, cpf, passaporte) VALUES ('Joao Silva', 'joao.silva@email.com', '(11) 98765-4321', 'Rua das Flores, 123', 'NACIONAL', '111.222.333-44', NULL)");
         commands.add("INSERT INTO `clientes` (nome, email, telefone, endereco, tipo_cliente, cpf, passaporte) VALUES ('Maria Oliveira', 'maria.oliveira@email.com', '(21) 91234-5678', 'Avenida Principal, 456', 'NACIONAL', '555.666.777-88', NULL)");
-        commands.add("INSERT INTO `clientes` (nome, email, telefone, endereco, tipo_cliente, cpf, passaporte) VALUES ('John Doe', 'john.doe@email.com', '+11234567890', '123 Flower Street', 'ESTRANGEIRO', NULL, 'A1B2C3D4')");
+        commands.add("INSERT INTO `clientes` (nome, email, telefone, endereco, tipo_cliente, cpf, passaporte) VALUES ('John Doe', 'john.doe@email.com', '(00) 90123-0192', '123 Flower Street', 'ESTRANGEIRO', NULL, 'A1B2C3D4')");
 
         commands.add("INSERT INTO `pacotes` (nome_pacote, destino, data_partida, data_retorno, preco) VALUES ('Praias do Nordeste', 'Salvador, BA', '2025-10-20', '2025-10-30', 2500.00)");
         commands.add("INSERT INTO `pacotes` (nome_pacote, destino, data_partida, data_retorno, preco) VALUES ('Serra Gaúcha', 'Gramado, RS', '2025-07-15', '2025-07-22', 1800.50)");
