@@ -19,15 +19,20 @@ public class TelaPrincipal extends JFrame {
         // --- Barra de Menu ---
         JMenuBar menuBar = new JMenuBar();
         JMenu menuCadastro = new JMenu("Cadastros");
+        JMenu menuOperacoes = new JMenu("Operações");
 
         JMenuItem itemPacotes = new JMenuItem("Pacotes");
         JMenuItem itemClientes = new JMenuItem("Clientes");
         JMenuItem itemServicos = new JMenuItem("Serviços Adicionais");
 
+        JMenuItem itemNovaContratacao = new JMenuItem("Nova Contratação");
+        menuOperacoes.add(itemNovaContratacao);
+
         menuCadastro.add(itemPacotes);
         menuCadastro.add(itemClientes);
         menuCadastro.add(itemServicos);
         menuBar.add(menuCadastro);
+        menuBar.add(menuOperacoes);
         setJMenuBar(menuBar);
 
         // --- Painel Principal com CardLayout ---
@@ -47,6 +52,7 @@ public class TelaPrincipal extends JFrame {
         painelPrincipal.add(new PainelPacotes(), "PACOTES");
         painelPrincipal.add(new PainelClientes(), "CLIENTES");
         painelPrincipal.add(new PainelServicos(), "SERVICOS");
+        painelPrincipal.add(new PainelContratacao(), "CONTRATACAO");
 
         add(painelPrincipal, BorderLayout.CENTER);
 
@@ -54,6 +60,7 @@ public class TelaPrincipal extends JFrame {
         itemPacotes.addActionListener(e -> cardLayout.show(painelPrincipal, "PACOTES"));
         itemClientes.addActionListener(e -> cardLayout.show(painelPrincipal, "CLIENTES"));
         itemServicos.addActionListener(e -> cardLayout.show(painelPrincipal, "SERVICOS"));
+        itemNovaContratacao.addActionListener(e -> cardLayout.show(painelPrincipal, "CONTRATACAO"));
 
         // Mostra o painel inicial
         cardLayout.show(painelPrincipal, "BOAS_VINDAS");
