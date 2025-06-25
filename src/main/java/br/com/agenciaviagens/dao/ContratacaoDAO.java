@@ -1,6 +1,7 @@
 package br.com.agenciaviagens.dao;
 
 import br.com.agenciaviagens.factory.ConnectionFactory;
+import br.com.agenciaviagens.model.Cliente;
 import br.com.agenciaviagens.model.Contratacao;
 import br.com.agenciaviagens.model.Pacote;
 import br.com.agenciaviagens.model.ServicoAdicional;
@@ -92,6 +93,37 @@ public class ContratacaoDAO {
                     pacote.setPreco(rset.getDouble("preco"));
 
                     contratacao.setPacote(pacote);
+
+                    contratacoes.add(contratacao);
+                }
+            }
+        }
+        return contratacoes;
+    }
+    public List<Contratacao> findByPacoteId(int pacoteId) throws SQLException {
+        String sql = "SELECT c.id_contratacao, c.data_contratacao, cl.id_cliente, cl.nome, cl.email " +
+                "FROM contratacoes c " +
+                "JOIN clientes cl ON c.id_cliente = cl.id_cliente " +
+                "WHERE c.id_pacote = ?";
+
+        List<Contratacao> contratacoes = new ArrayList<>();
+
+        try (Connection conn = ConnectionFactory.createConnectionToMySQL();
+             PreparedStatement pstm = conn.prepareStatement(sql)) {
+
+            pstm.setInt(1, pacoteId);
+            try (ResultSet rset = pstm.executeQuery()) {
+                while (rset.next()) {
+                    Contratacao contratacao = new Contratacao();
+                    contratacao.setId(rset.getInt("id_contratacao"));
+                    contratacao.setDataContratacao(rset.getTimestamp("data_contratacao"));
+
+                    Cliente cliente = new Cliente();
+                    cliente.setId(rset.getInt("id_cliente"));
+                    cliente.setNome(rset.getString("nome"));
+                    cliente.setEmail(rset.getString("email"));
+
+                    contratacao.setCliente(cliente);
 
                     contratacoes.add(contratacao);
                 }

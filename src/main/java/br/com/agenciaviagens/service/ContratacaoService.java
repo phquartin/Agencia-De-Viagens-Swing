@@ -33,4 +33,11 @@ public class ContratacaoService {
             throw new ValidationException("Erro técnico ao consultar as contratações: " + e.getMessage());
         }
     }
+    public List<Contratacao> buscarContratacoesPorPacote(int pacoteId) throws ValidationException {
+        try {
+            return contratacaoDAO.findByPacoteId(pacoteId);
+        } catch (SQLException e) {
+            throw new ValidationException("Erro técnico ao consultar as contratações: " + e.getMessage());
+        }
+    }
 }
