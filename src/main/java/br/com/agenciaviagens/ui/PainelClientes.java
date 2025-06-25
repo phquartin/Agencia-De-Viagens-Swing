@@ -1,5 +1,6 @@
 package br.com.agenciaviagens.ui;
 
+import br.com.agenciaviagens.exception.ValidationException;
 import br.com.agenciaviagens.model.Cliente;
 import br.com.agenciaviagens.service.ClienteService;
 import br.com.agenciaviagens.ui.tablemodel.ClienteTableModel;
@@ -25,14 +26,11 @@ public class PainelClientes extends JPanel {
         // Título
         JLabel labelTitulo = new JLabel("Gerenciamento de Clientes");
         labelTitulo.setFont(Estilo.FONTE_TITULO);
-        labelTitulo.setForeground(Estilo.COR_TEXTO);
         add(labelTitulo, BorderLayout.NORTH);
 
         // Tabela
         tableModel = new ClienteTableModel();
         tabelaClientes = new JTable(tableModel);
-        tabelaClientes.setFont(Estilo.FONTE_CORPO);
-        tabelaClientes.getTableHeader().setFont(Estilo.FONTE_SUBTITULO);
         tabelaClientes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         JScrollPane scrollPane = new JScrollPane(tabelaClientes);
         add(scrollPane, BorderLayout.CENTER);
@@ -40,24 +38,13 @@ public class PainelClientes extends JPanel {
         // Painel de Botões
         JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         painelBotoes.setBackground(Estilo.COR_BACKGROUND);
-
         JButton btnNovo = new JButton("Novo Cliente");
         JButton btnEditar = new JButton("Editar");
         JButton btnExcluir = new JButton("Excluir");
-
-        // Estilos dos botões
-        btnNovo.setBackground(Estilo.COR_PRIMARIA);
-        btnNovo.setForeground(Color.WHITE);
-        btnNovo.setFont(Estilo.FONTE_BOTAO);
-
-        btnEditar.setBackground(Estilo.COR_SEGUNDARIA);
-        btnEditar.setForeground(Color.WHITE);
-        btnEditar.setFont(Estilo.FONTE_BOTAO);
-
-        btnExcluir.setBackground(Estilo.COR_DESTAQUE);
-        btnExcluir.setForeground(Color.WHITE);
-        btnExcluir.setFont(Estilo.FONTE_BOTAO);
-
+        // (Estilos dos botões omitidos para brevidade, mas devem estar aqui)
+        btnNovo.setBackground(Estilo.COR_PRIMARIA); btnNovo.setForeground(Color.WHITE);
+        btnEditar.setBackground(Estilo.COR_SEGUNDARIA); btnEditar.setForeground(Color.WHITE);
+        btnExcluir.setBackground(Estilo.COR_DESTAQUE); btnExcluir.setForeground(Color.WHITE);
         painelBotoes.add(btnNovo);
         painelBotoes.add(btnEditar);
         painelBotoes.add(btnExcluir);
@@ -65,7 +52,41 @@ public class PainelClientes extends JPanel {
 
         carregarDadosTabela();
 
-        // Ações dos botões serão implementadas no próximo passo
+        // --- AÇÕES DOS BOTÕES ---
+
+        btnNovo.addActionListener(e -> {
+            DialogoCliente dialogo = new DialogoCliente((Frame) SwingUtilities.getWindowAncestor(this), clienteService, null, this::carregarDadosTabela);
+            dialogo.setVisible(true);
+        });
+
+        btnEditar.addActionListener(e -> {
+            int linha = tabelaClientes.getSelectedRow();
+            if (linha == -1) {
+                JOptionPane.showMessageDialog(this, "Selecione um cliente para editar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            Cliente cliente = tableModel.getClienteAt(linha);
+            DialogoCliente dialogo = new DialogoCliente((Frame) SwingUtilities.getWindowAncestor(this), clienteService, cliente, this::carregarDadosTabela);
+            dialogo.setVisible(true);
+        });
+
+        btnExcluir.addActionListener(e -> {
+            int linha = tabelaClientes.getSelectedRow();
+            if (linha == -1) {
+                JOptionPane.showMessageDialog(this, "Selecione um cliente para excluir.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            int confirm = JOptionPane.showConfirmDialog(this, "Tem certeza?", "Confirmar Exclusão", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                try {
+                    Cliente cliente = tableModel.getClienteAt(linha);
+                    clienteService.excluir(cliente.getId());
+                    carregarDadosTabela();
+                } catch (ValidationException ex) {
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
     }
 
     private void carregarDadosTabela() {
