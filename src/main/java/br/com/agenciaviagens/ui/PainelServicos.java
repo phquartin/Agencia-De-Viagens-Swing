@@ -32,6 +32,19 @@ public class PainelServicos extends JPanel {
         JButton btnNovo = new JButton("Novo Serviço");
         JButton btnEditar = new JButton("Editar");
         JButton btnExcluir = new JButton("Excluir");
+        // Estilos... (código dos estilos dos botões permanece o mesmo)
+        btnNovo.setBackground(Estilo.COR_PRIMARIA);
+        btnNovo.setForeground(Color.WHITE);
+        btnNovo.setFont(Estilo.FONTE_BOTAO);
+
+        btnEditar.setBackground(Estilo.COR_SEGUNDARIA);
+        btnEditar.setForeground(Color.WHITE);
+        btnEditar.setFont(Estilo.FONTE_BOTAO);
+
+        btnExcluir.setBackground(Estilo.COR_DESTAQUE);
+        btnExcluir.setForeground(Color.WHITE);
+        btnExcluir.setFont(Estilo.FONTE_BOTAO);
+
         painelBotoes.add(btnNovo);
         painelBotoes.add(btnEditar);
         painelBotoes.add(btnExcluir);

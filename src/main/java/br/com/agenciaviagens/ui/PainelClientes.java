@@ -41,7 +41,17 @@ public class PainelClientes extends JPanel {
         JButton btnNovo = new JButton("Novo Cliente");
         JButton btnEditar = new JButton("Editar");
         JButton btnExcluir = new JButton("Excluir");
-        // (Estilos dos botões omitidos para brevidade, mas devem estar aqui)
+        btnNovo.setBackground(Estilo.COR_PRIMARIA);
+        btnNovo.setForeground(Color.WHITE);
+        btnNovo.setFont(Estilo.FONTE_BOTAO);
+
+        btnEditar.setBackground(Estilo.COR_SEGUNDARIA);
+        btnEditar.setForeground(Color.WHITE);
+        btnEditar.setFont(Estilo.FONTE_BOTAO);
+
+        btnExcluir.setBackground(Estilo.COR_DESTAQUE);
+        btnExcluir.setForeground(Color.WHITE);
+        btnExcluir.setFont(Estilo.FONTE_BOTAO);
         btnNovo.setBackground(Estilo.COR_PRIMARIA); btnNovo.setForeground(Color.WHITE);
         btnEditar.setBackground(Estilo.COR_SEGUNDARIA); btnEditar.setForeground(Color.WHITE);
         btnExcluir.setBackground(Estilo.COR_DESTAQUE); btnExcluir.setForeground(Color.WHITE);
