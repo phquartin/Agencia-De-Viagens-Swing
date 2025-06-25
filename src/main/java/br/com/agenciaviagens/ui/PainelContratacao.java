@@ -13,6 +13,8 @@ import br.com.agenciaviagens.ui.util.Estilo;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.Date;
 import java.util.List;
 
@@ -20,7 +22,7 @@ public class PainelContratacao extends JPanel {
 
     private JComboBox<Cliente> comboClientes;
     private JComboBox<Pacote> comboPacotes;
-    private JList<ServicoAdicional> listaServicos; // <-- NOVO COMPONENTE
+    private JList<ServicoAdicional> listaServicos;
     private ContratacaoService contratacaoService;
 
     public PainelContratacao() {
@@ -61,19 +63,35 @@ public class PainelContratacao extends JPanel {
         painelBotao.add(btnContratar);
         add(painelBotao, BorderLayout.SOUTH);
 
-        carregarDados();
+        // Adiciona um listener que é acionado quando o painel fica visível.
+        // Usamos ComponentAdapter para não precisar implementar todos os métodos da interface.
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                // Toda vez que o painel for mostrado, atualiza os dados.
+                System.out.println("Painel de Contratação visível. Atualizando dados...");
+                carregarDados();
+            }
+        });
+
+        // O carregamento inicial de dados não é mais necessário no construtor,
+        // pois o componentShown será chamado na primeira vez que a tela aparecer.
 
         btnContratar.addActionListener(e -> contratar());
     }
 
     private void carregarDados() {
         // Carrega clientes
+        Cliente clienteSelecionado = (Cliente) comboClientes.getSelectedItem();
         comboClientes.removeAllItems();
         new ClienteService().listarTodos().forEach(comboClientes::addItem);
+        if (clienteSelecionado != null) comboClientes.setSelectedItem(clienteSelecionado);
 
         // Carrega pacotes
+        Pacote pacoteSelecionado = (Pacote) comboPacotes.getSelectedItem();
         comboPacotes.removeAllItems();
         new PacoteService().listarTodos().forEach(comboPacotes::addItem);
+        if (pacoteSelecionado != null) comboPacotes.setSelectedItem(pacoteSelecionado);
 
         // Carrega serviços
         List<ServicoAdicional> servicos = new ServicoAdicionalService().listarTodos();
@@ -87,53 +105,20 @@ public class PainelContratacao extends JPanel {
             novaContratacao.setPacote((Pacote) comboPacotes.getSelectedItem());
             novaContratacao.setDataContratacao(new Date());
 
-            // Pega a lista de serviços selecionados
             List<ServicoAdicional> servicosSelecionados = listaServicos.getSelectedValuesList();
             novaContratacao.setServicosAdicionais(servicosSelecionados);
 
             contratacaoService.salvar(novaContratacao);
 
             JOptionPane.showMessageDialog(this, "Contratação realizada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-            listaServicos.clearSelection(); // Limpa a seleção após salvar
+            listaServicos.clearSelection();
         } catch (ValidationException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // Métodos Renderizadores para os componentes
-    private ListCellRenderer<Object> createClienteRenderer() {
-        return new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof Cliente) setText(((Cliente) value).getNome());
-                return this;
-            }
-        };
-    }
-
-    private ListCellRenderer<Object> createPacoteRenderer() {
-        return new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof Pacote) setText(((Pacote) value).getNomePacote());
-                return this;
-            }
-        };
-    }
-
-    private ListCellRenderer<Object> createServicoRenderer() {
-        return new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof ServicoAdicional) {
-                    ServicoAdicional s = (ServicoAdicional) value;
-                    setText(String.format("%s (R$ %.2f)", s.getNomeServico(), s.getPreco()));
-                }
-                return this;
-            }
-        };
-    }
+    // Métodos Renderizadores
+    private ListCellRenderer<Object> createClienteRenderer() { return new DefaultListCellRenderer() { @Override public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) { super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus); if (value instanceof Cliente) setText(((Cliente) value).getNome()); return this; } }; }
+    private ListCellRenderer<Object> createPacoteRenderer() { return new DefaultListCellRenderer() { @Override public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) { super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus); if (value instanceof Pacote) setText(((Pacote) value).getNomePacote()); return this; } }; }
+    private ListCellRenderer<Object> createServicoRenderer() { return new DefaultListCellRenderer() { @Override public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) { super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus); if (value instanceof ServicoAdicional) { ServicoAdicional s = (ServicoAdicional) value; setText(String.format("%s (R$ %.2f)", s.getNomeServico(), s.getPreco())); } return this; } }; }
 }
