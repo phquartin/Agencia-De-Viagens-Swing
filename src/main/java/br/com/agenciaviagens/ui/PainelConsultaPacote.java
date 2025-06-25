@@ -9,6 +9,8 @@ import br.com.agenciaviagens.ui.tablemodel.ConsultaPacoteTableModel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.List;
 
 public class PainelConsultaPacote extends JPanel {
@@ -23,7 +25,6 @@ public class PainelConsultaPacote extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Painel de Filtro
         JPanel painelFiltro = new JPanel(new FlowLayout(FlowLayout.LEFT));
         painelFiltro.add(new JLabel("Consultar clientes que contrataram o pacote:"));
         comboPacotes = new JComboBox<>();
@@ -38,22 +39,33 @@ public class PainelConsultaPacote extends JPanel {
         painelFiltro.add(comboPacotes);
         add(painelFiltro, BorderLayout.NORTH);
 
-        // Tabela
         tableModel = new ConsultaPacoteTableModel();
         tabelaResultados = new JTable(tableModel);
         add(new JScrollPane(tabelaResultados), BorderLayout.CENTER);
 
-        carregarPacotes();
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                System.out.println("Painel de Consulta por Pacote visível. Atualizando lista de pacotes...");
+                carregarPacotes();
+            }
+        });
 
         comboPacotes.addActionListener(e -> buscarContratacoes());
     }
 
     private void carregarPacotes() {
+        Pacote pacoteSelecionado = (Pacote) comboPacotes.getSelectedItem();
         PacoteService pacoteService = new PacoteService();
         comboPacotes.removeAllItems();
         pacoteService.listarTodos().forEach(comboPacotes::addItem);
-        if (comboPacotes.getItemCount() > 0) {
-            comboPacotes.setSelectedIndex(0);
+
+        if (pacoteSelecionado != null) {
+            comboPacotes.setSelectedItem(pacoteSelecionado);
+        }
+
+        if (comboPacotes.getSelectedItem() != pacoteSelecionado) {
+            buscarContratacoes();
         }
     }
 

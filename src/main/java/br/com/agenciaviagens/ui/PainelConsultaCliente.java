@@ -6,10 +6,11 @@ import br.com.agenciaviagens.model.Contratacao;
 import br.com.agenciaviagens.service.ClienteService;
 import br.com.agenciaviagens.service.ContratacaoService;
 import br.com.agenciaviagens.ui.tablemodel.ContratacaoTableModel;
-import br.com.agenciaviagens.ui.util.Estilo;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.List;
 
 public class PainelConsultaCliente extends JPanel {
@@ -24,7 +25,6 @@ public class PainelConsultaCliente extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Painel Superior com o seletor de cliente
         JPanel painelFiltro = new JPanel(new FlowLayout(FlowLayout.LEFT));
         painelFiltro.add(new JLabel("Consultar pacotes contratados pelo cliente:"));
         comboClientes = new JComboBox<>();
@@ -39,31 +39,42 @@ public class PainelConsultaCliente extends JPanel {
         painelFiltro.add(comboClientes);
         add(painelFiltro, BorderLayout.NORTH);
 
-        // Tabela de Resultados
         tableModel = new ContratacaoTableModel();
         tabelaResultados = new JTable(tableModel);
         add(new JScrollPane(tabelaResultados), BorderLayout.CENTER);
 
-        carregarClientes();
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                System.out.println("Painel de Consulta por Cliente visível. Atualizando lista de clientes...");
+                carregarClientes();
+            }
+        });
 
-        // Ação para quando um cliente for selecionado
         comboClientes.addActionListener(e -> buscarContratacoes());
     }
 
     private void carregarClientes() {
+        Cliente clienteSelecionado = (Cliente) comboClientes.getSelectedItem();
         ClienteService clienteService = new ClienteService();
         comboClientes.removeAllItems();
         clienteService.listarTodos().forEach(comboClientes::addItem);
-        // Garante que a busca seja acionada para o primeiro item da lista
-        if (comboClientes.getItemCount() > 0) {
-            comboClientes.setSelectedIndex(0);
+
+        // Tenta manter o cliente que já estava selecionado
+        if (clienteSelecionado != null) {
+            comboClientes.setSelectedItem(clienteSelecionado);
+        }
+
+        // Se a seleção mudou (ou era nula), atualiza a busca.
+        if (comboClientes.getSelectedItem() != clienteSelecionado) {
+            buscarContratacoes();
         }
     }
 
     private void buscarContratacoes() {
         Cliente clienteSelecionado = (Cliente) comboClientes.getSelectedItem();
         if (clienteSelecionado == null) {
-            tableModel.setContratacoes(List.of()); // Limpa a tabela se nada for selecionado
+            tableModel.setContratacoes(List.of());
             return;
         }
         try {
