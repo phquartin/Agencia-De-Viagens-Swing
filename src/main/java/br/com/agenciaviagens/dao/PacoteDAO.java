@@ -60,7 +60,6 @@ public class PacoteDAO {
 
         Connection conn = null;
         PreparedStatement pstm = null;
-        // Objeto que vai recuperar os dados do banco.
         ResultSet rset = null;
 
         try {
@@ -68,11 +67,9 @@ public class PacoteDAO {
             pstm = conn.prepareStatement(sql);
             rset = pstm.executeQuery();
 
-            // Enquanto existirem dados no banco, faça:
             while (rset.next()) {
                 Pacote pacote = new Pacote();
 
-                // Recupera os dados do ResultSet e atribui ao objeto Pacote
                 pacote.setId(rset.getInt("id_pacote"));
                 pacote.setNomePacote(rset.getString("nome_pacote"));
                 pacote.setDestino(rset.getString("destino"));
@@ -80,7 +77,6 @@ public class PacoteDAO {
                 pacote.setDataPartida(rset.getDate("data_partida"));
                 pacote.setDataRetorno(rset.getDate("data_retorno"));
 
-                // Adiciona o pacote recuperado à lista de pacotes
                 pacotes.add(pacote);
             }
         } catch (SQLException e) {
@@ -117,12 +113,10 @@ public class PacoteDAO {
             conn = ConnectionFactory.createConnectionToMySQL();
             pstm = conn.prepareStatement(sql);
 
-            // Seta o ID que estamos buscando
             pstm.setInt(1, id);
 
             rset = pstm.executeQuery();
 
-            // Se o ResultSet tiver um resultado, significa que um objeto foi encontrado
             if (rset.next()) {
                 pacote = new Pacote();
                 pacote.setId(rset.getInt("id_pacote"));

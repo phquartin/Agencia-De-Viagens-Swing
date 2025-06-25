@@ -2,7 +2,6 @@ package br.com.agenciaviagens.dao;
 
 import br.com.agenciaviagens.factory.ConnectionFactory;
 import br.com.agenciaviagens.model.Cliente;
-import br.com.agenciaviagens.model.ServicoAdicional;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -25,14 +24,14 @@ public class ClienteDAO {
             pstm.setString(2, cliente.getEmail());
             pstm.setString(3, cliente.getTelefone());
             pstm.setString(4, cliente.getEndereco());
-            pstm.setString(5, cliente.getTipo().name()); // .name() converte o enum para String ("NACIONAL" ou "ESTRANGEIRO")
+            pstm.setString(5, cliente.getTipo().name());
 
             // Lógica para CPF e Passaporte
             if (cliente.getTipo() == Cliente.TipoCliente.NACIONAL) {
                 pstm.setString(6, cliente.getCpf());
-                pstm.setNull(7, Types.VARCHAR); // O campo passaporte será nulo
+                pstm.setNull(7, Types.VARCHAR);
             } else {
-                pstm.setNull(6, Types.VARCHAR); // O campo cpf será nulo
+                pstm.setNull(6, Types.VARCHAR);
                 pstm.setString(7, cliente.getPassaporte());
             }
 
@@ -106,12 +105,10 @@ public class ClienteDAO {
             conn = ConnectionFactory.createConnectionToMySQL();
             pstm = conn.prepareStatement(sql);
 
-            // Seta o ID que estamos buscando
             pstm.setInt(1, id);
 
             rset = pstm.executeQuery();
 
-            // Se o ResultSet tiver um resultado, significa que um objeto foi encontrado
             if (rset.next()) {
                 cliente = new Cliente();
 

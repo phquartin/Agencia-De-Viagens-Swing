@@ -8,7 +8,6 @@ public class Main {
         System.out.println("Iniciando aplicação...");
 
         // Passo 1: Inicializar o banco de dados.
-        // Esta é a primeira coisa que a aplicação faz.
         DatabaseInitializer.initialize();
 
         System.out.println("=====================================================");
