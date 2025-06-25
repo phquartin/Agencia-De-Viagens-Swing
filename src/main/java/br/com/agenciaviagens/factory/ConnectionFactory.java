@@ -26,9 +26,8 @@ public class ConnectionFactory {
         }
 
         // Cria a conexão com o banco de dados
-        Connection connection = DriverManager.getConnection(DATABASE_URL, USERNAME, PASSWORD);
 
-        return connection;
+        return DriverManager.getConnection(DATABASE_URL, USERNAME, PASSWORD);
     }
 
     // Método principal apenas para testar a conexão
@@ -41,7 +40,6 @@ public class ConnectionFactory {
             }
         } catch (SQLException e) {
             System.err.println("Falha ao obter a conexão: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 }
