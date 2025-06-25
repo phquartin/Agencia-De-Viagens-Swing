@@ -4,19 +4,23 @@ import br.com.agenciaviagens.exception.ValidationException;
 import br.com.agenciaviagens.model.Cliente;
 import br.com.agenciaviagens.model.Contratacao;
 import br.com.agenciaviagens.model.Pacote;
+import br.com.agenciaviagens.model.ServicoAdicional;
 import br.com.agenciaviagens.service.ClienteService;
 import br.com.agenciaviagens.service.ContratacaoService;
 import br.com.agenciaviagens.service.PacoteService;
+import br.com.agenciaviagens.service.ServicoAdicionalService;
 import br.com.agenciaviagens.ui.util.Estilo;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Date;
+import java.util.List;
 
 public class PainelContratacao extends JPanel {
 
     private JComboBox<Cliente> comboClientes;
     private JComboBox<Pacote> comboPacotes;
+    private JList<ServicoAdicional> listaServicos; // <-- NOVO COMPONENTE
     private ContratacaoService contratacaoService;
 
     public PainelContratacao() {
@@ -24,7 +28,6 @@ public class PainelContratacao extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Título
         JLabel labelTitulo = new JLabel("Nova Contratação de Pacote", SwingConstants.LEFT);
         labelTitulo.setFont(Estilo.FONTE_TITULO);
         add(labelTitulo, BorderLayout.NORTH);
@@ -37,61 +40,44 @@ public class PainelContratacao extends JPanel {
 
         comboClientes = new JComboBox<>();
         comboPacotes = new JComboBox<>();
+        listaServicos = new JList<>();
 
-        // Renderizadores para mostrar o nome em vez do objeto
-        comboClientes.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof Cliente) {
-                    setText(((Cliente) value).getNome());
-                }
-                return this;
-            }
-        });
+        // Renderizadores
+        comboClientes.setRenderer(createClienteRenderer());
+        comboPacotes.setRenderer(createPacoteRenderer());
+        listaServicos.setCellRenderer(createServicoRenderer());
 
-        comboPacotes.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof Pacote) {
-                    setText(((Pacote) value).getNomePacote());
-                }
-                return this;
-            }
-        });
-
-        gbc.gridx = 0; gbc.gridy = 0; painelSelecao.add(new JLabel("Selecione o Cliente:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 1.0; painelSelecao.add(comboClientes, gbc);
-        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0.0; painelSelecao.add(new JLabel("Selecione o Pacote:"), gbc);
+        gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.EAST; painelSelecao.add(new JLabel("Cliente:"), gbc);
+        gbc.gridx = 1; gbc.weightx = 1.0; gbc.anchor = GridBagConstraints.WEST; painelSelecao.add(comboClientes, gbc);
+        gbc.gridy++; gbc.gridx = 0; gbc.weightx = 0.0; painelSelecao.add(new JLabel("Pacote:"), gbc);
         gbc.gridx = 1; gbc.weightx = 1.0; painelSelecao.add(comboPacotes, gbc);
+        gbc.gridy++; gbc.gridx = 0; gbc.weightx = 0.0; gbc.anchor = GridBagConstraints.NORTHEAST; painelSelecao.add(new JLabel("Serviços (Opcional):"), gbc);
+        gbc.gridx = 1; gbc.weightx = 1.0; gbc.fill = GridBagConstraints.BOTH; gbc.weighty = 1.0; painelSelecao.add(new JScrollPane(listaServicos), gbc);
 
         add(painelSelecao, BorderLayout.CENTER);
 
-        // Botão de Ação
         JButton btnContratar = new JButton("Realizar Contratação");
-        btnContratar.setBackground(Estilo.COR_PRIMARIA);
-        btnContratar.setForeground(Color.WHITE);
-        btnContratar.setFont(Estilo.FONTE_BOTAO);
         JPanel painelBotao = new JPanel(new FlowLayout(FlowLayout.CENTER));
         painelBotao.add(btnContratar);
         add(painelBotao, BorderLayout.SOUTH);
 
-        carregarCombos();
+        carregarDados();
 
         btnContratar.addActionListener(e -> contratar());
     }
 
-    private void carregarCombos() {
+    private void carregarDados() {
         // Carrega clientes
-        ClienteService clienteService = new ClienteService();
         comboClientes.removeAllItems();
-        clienteService.listarTodos().forEach(comboClientes::addItem);
+        new ClienteService().listarTodos().forEach(comboClientes::addItem);
 
         // Carrega pacotes
-        PacoteService pacoteService = new PacoteService();
         comboPacotes.removeAllItems();
-        pacoteService.listarTodos().forEach(comboPacotes::addItem);
+        new PacoteService().listarTodos().forEach(comboPacotes::addItem);
+
+        // Carrega serviços
+        List<ServicoAdicional> servicos = new ServicoAdicionalService().listarTodos();
+        listaServicos.setListData(servicos.toArray(new ServicoAdicional[0]));
     }
 
     private void contratar() {
@@ -99,15 +85,55 @@ public class PainelContratacao extends JPanel {
             Contratacao novaContratacao = new Contratacao();
             novaContratacao.setCliente((Cliente) comboClientes.getSelectedItem());
             novaContratacao.setPacote((Pacote) comboPacotes.getSelectedItem());
-            novaContratacao.setDataContratacao(new Date()); // Data atual
+            novaContratacao.setDataContratacao(new Date());
+
+            // Pega a lista de serviços selecionados
+            List<ServicoAdicional> servicosSelecionados = listaServicos.getSelectedValuesList();
+            novaContratacao.setServicosAdicionais(servicosSelecionados);
 
             contratacaoService.salvar(novaContratacao);
 
             JOptionPane.showMessageDialog(this, "Contratação realizada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-            // Limpa a seleção ou pode navegar para outra tela
-            carregarCombos(); // Recarrega para o caso de algo mudar
+            listaServicos.clearSelection(); // Limpa a seleção após salvar
         } catch (ValidationException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    // Métodos Renderizadores para os componentes
+    private ListCellRenderer<Object> createClienteRenderer() {
+        return new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof Cliente) setText(((Cliente) value).getNome());
+                return this;
+            }
+        };
+    }
+
+    private ListCellRenderer<Object> createPacoteRenderer() {
+        return new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof Pacote) setText(((Pacote) value).getNomePacote());
+                return this;
+            }
+        };
+    }
+
+    private ListCellRenderer<Object> createServicoRenderer() {
+        return new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof ServicoAdicional) {
+                    ServicoAdicional s = (ServicoAdicional) value;
+                    setText(String.format("%s (R$ %.2f)", s.getNomeServico(), s.getPreco()));
+                }
+                return this;
+            }
+        };
     }
 }
