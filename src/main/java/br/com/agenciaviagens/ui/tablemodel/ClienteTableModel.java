@@ -7,7 +7,7 @@ import java.util.List;
 
 public class ClienteTableModel extends AbstractTableModel {
 
-    private final String[] colunas = {"ID", "Nome", "E-mail", "Tipo", "Documento"};
+    private final String[] colunas = {"ID", "Nome", "E-mail", "Tipo", "Documento", "Telefone"};
     private List<Cliente> clientes;
 
     public ClienteTableModel() {
@@ -48,6 +48,8 @@ public class ClienteTableModel extends AbstractTableModel {
                 } else {
                     return cliente.getPassaporte();
                 }
+            case 5:
+                return cliente.getTelefone();
             default:
                 return null;
         }
