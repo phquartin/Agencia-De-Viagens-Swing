@@ -1,8 +1,3 @@
-DROP SCHEMA IF EXISTS `agencia_viagens`;
-
-CREATE SCHEMA IF NOT EXISTS `agencia_viagens` DEFAULT CHARACTER SET utf8mb4;
-
-USE `agencia_viagens`;
 
 -- Tabela: clientes
 -- Armazena os dados dos clientes da agência.

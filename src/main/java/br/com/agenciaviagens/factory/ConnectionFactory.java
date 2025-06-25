@@ -6,40 +6,29 @@ import java.sql.SQLException;
 
 public class ConnectionFactory {
 
-    // URL de conexão com o banco de dados MySQL
-    private static final String DATABASE_URL = "jdbc:mysql://localhost:3306/agencia_viagens?useTimezone=true&serverTimezone=UTC";
+    // URL de conexão para o SERVIDOR MySQL
+    private static final String ROOT_DATABASE_URL = "jdbc:mysql://localhost:3306/?useTimezone=true&serverTimezone=UTC&allowMultiQueries=true";
+
+    // URL de conexão para o BANCO DE DADOS
+    private static final String APP_DATABASE_URL = "jdbc:mysql://localhost:3306/agencia_viagens?useTimezone=true&serverTimezone=UTC&allowMultiQueries=true";
+
     private static final String USERNAME = "root";
     private static final String PASSWORD = "root";
-
     /**
-     * Cria e retorna uma conexão com o banco de dados.
-     * @return Uma conexão com o banco de dados.
-     * @throws SQLException Se ocorrer um erro ao tentar se conectar.
+     * Cria uma conexão com o servidor MySQL (sem banco de dados específico).
+     * Usado apenas para criar o schema inicial.
+     * @return Uma conexão com o servidor MySQL.
      */
-    public static Connection createConnectionToMySQL() throws SQLException {
-        // O Class.forName é necessário em algumas configurações para carregar o driver do MySQL
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            // Lidar com o erro de driver não encontrado
-            throw new SQLException("Driver do MySQL não encontrado", e);
-        }
-
-        // Cria a conexão com o banco de dados
-
-        return DriverManager.getConnection(DATABASE_URL, USERNAME, PASSWORD);
+    public static Connection createRootConnection() throws SQLException {
+        return DriverManager.getConnection(ROOT_DATABASE_URL, USERNAME, PASSWORD);
     }
 
-    // Método principal apenas para testar a conexão
-    public static void main(String[] args) {
-        try {
-            Connection con = createConnectionToMySQL();
-            if (con != null) {
-                System.out.println("Conexão obtida com sucesso!");
-                con.close();
-            }
-        } catch (SQLException e) {
-            System.err.println("Falha ao obter a conexão: " + e.getMessage());
-        }
+    /**
+     * Cria uma conexão com o banco da aplicação.
+     * Usado para todas as operações da aplicação após o banco ser criado.
+     * @return Uma conexão com o banco 'agencia_viagens'.
+     */
+    public static Connection createConnectionToMySQL() throws SQLException {
+        return DriverManager.getConnection(APP_DATABASE_URL, USERNAME, PASSWORD);
     }
 }
