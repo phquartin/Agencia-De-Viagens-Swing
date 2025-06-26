@@ -5,7 +5,7 @@ CREATE TABLE `clientes` (
                             `id_cliente` INT NOT NULL AUTO_INCREMENT,
                             `nome` VARCHAR(255) NOT NULL,
                             `email` VARCHAR(255) NOT NULL UNIQUE,
-                            `telefone` VARCHAR(20),
+                            `telefone` VARCHAR(20) ,
                             `endereco` VARCHAR(255),
                             `tipo_cliente` ENUM('NACIONAL', 'ESTRANGEIRO') NOT NULL,
                             `cpf` VARCHAR(14) UNIQUE, -- Formato XXX.XXX.XXX-XX

@@ -1,5 +1,3 @@
-// Código para substituir em PainelPacotes.java
-
 package br.com.agenciaviagens.ui;
 
 import br.com.agenciaviagens.exception.ValidationException;
@@ -36,7 +34,7 @@ public class PainelPacotes extends JPanel {
         tabelaPacotes = new JTable(tableModel);
         tabelaPacotes.setFont(Estilo.FONTE_CORPO);
         tabelaPacotes.getTableHeader().setFont(Estilo.FONTE_SUBTITULO);
-        tabelaPacotes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // Apenas uma linha pode ser selecionada
+        tabelaPacotes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         JScrollPane scrollPane = new JScrollPane(tabelaPacotes);
         add(scrollPane, BorderLayout.CENTER);
 
@@ -48,7 +46,6 @@ public class PainelPacotes extends JPanel {
         JButton btnEditar = new JButton("Editar");
         JButton btnExcluir = new JButton("Excluir");
 
-        // Estilos... (código dos estilos dos botões permanece o mesmo)
         btnNovo.setBackground(Estilo.COR_PRIMARIA);
         btnNovo.setForeground(Color.WHITE);
         btnNovo.setFont(Estilo.FONTE_BOTAO);
@@ -88,7 +85,7 @@ public class PainelPacotes extends JPanel {
                     JOptionPane.showMessageDialog(this, "Pacote excluído com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
                     carregarDadosTabela(); // Atualiza a tabela
                 } catch (ValidationException ex) {
-                    // Mostra a mensagem de erro amigável da nossa camada de serviço
+                    // Mostra a mensagem de erro amigável
                     JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro de Validação", JOptionPane.ERROR_MESSAGE);
                 }
             }
